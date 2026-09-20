@@ -50,7 +50,12 @@ app = Flask(__name__)
 
 
 def get_source_ip():
-    return request.remote_addr or "unknown"
+    if env_bool('TRUST_PROXY', False):
+        client_ip = request.headers.get('CF-Connecting-IP', '').strip()
+        if client_ip:
+            return client_ip
+
+    return request.remote_addr or 'unknown'
 
 
 @app.before_request

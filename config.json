@@ -1,0 +1,44 @@
+{
+  "server": {
+    "host": "127.0.0.1",
+    "port": 5000
+  },
+  "port_scan": {
+    "enabled": true,
+    "listen_host": "127.0.0.1",
+    "ports": [
+      9001,
+      9002,
+      9003,
+      9004,
+      9005,
+      9006,
+      9007,
+      9008
+    ],
+    "window_seconds": 10,
+    "distinct_ports_threshold": 5,
+    "alert_cooldown_seconds": 15
+  },
+  "login_attempts": {
+    "window_seconds": 60,
+    "failed_attempts_threshold": 5,
+    "alert_cooldown_seconds": 30
+  },
+  "request_rate": {
+    "window_seconds": 10,
+    "requests_threshold": 20,
+    "alert_cooldown_seconds": 15,
+    "excluded_paths": [
+      "/",
+      "/health"
+    ]
+  },
+  "demo_auth": {
+    "username": "student",
+    "password": "class-demo-password"
+  },
+  "logging": {
+    "file": "logs/alerts.jsonl"
+  }
+}

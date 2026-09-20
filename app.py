@@ -195,6 +195,7 @@ def main():
                 port=port,
                 threads=4,
                 trusted_proxy="*",
+                trusted_proxy_count=2,
                 trusted_proxy_headers={
                     "x-forwarded-for",
                     "x-forwarded-proto"

@@ -5,7 +5,6 @@ from pathlib import Path
 
 from flask import Flask, jsonify, request
 from waitress import serve
-from werkzeug.middleware.proxy_fix import ProxyFix
 
 from ids_engine import DetectionEngine
 from port_sensor import PortScanSensor
@@ -50,15 +49,6 @@ ENGINE = DetectionEngine(CONFIG)
 app = Flask(__name__)
 
 
-if env_bool("TRUST_PROXY", False):
-    app.wsgi_app = ProxyFix(
-        app.wsgi_app,
-        x_for=1,
-        x_proto=1,
-        x_host=1
-    )
-
-
 def get_source_ip():
     return request.remote_addr or "unknown"
 
@@ -82,7 +72,13 @@ def index():
             "login_test": "POST /login"
         },
         rules={
-            "port_scan": CONFIG["port_scan"],
+            "port_scan": {
+                **CONFIG["port_scan"],
+                "enabled": env_bool(
+                    "ENABLE_PORT_SENSOR",
+                    CONFIG["port_scan"]["enabled"]
+                )
+            },
             "login_attempts": CONFIG["login_attempts"],
             "request_rate": CONFIG["request_rate"]
         }
@@ -192,12 +188,26 @@ def main():
             flush=True
         )
 
-        serve(
-            app,
-            host=host,
-            port=port,
-            threads=4
-        )
+        if env_bool("TRUST_PROXY", False):
+            serve(
+                app,
+                host=host,
+                port=port,
+                threads=4,
+                trusted_proxy="*",
+                trusted_proxy_headers={
+                    "x-forwarded-for",
+                    "x-forwarded-proto"
+                },
+                clear_untrusted_proxy_headers=True
+            )
+        else:
+            serve(
+                app,
+                host=host,
+                port=port,
+                threads=4
+            )
 
     finally:
         if sensor is not None:
